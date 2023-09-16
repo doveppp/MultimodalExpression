@@ -171,7 +171,6 @@ class TransformerSeqHalflifeToTFTrainer(BaseTrainer):
         for epoch in range(self.epochs):
             train_loss = self.train(epoch, model, optimizer, criterion, trainloader)
             eval_loss, eval_f1 = self.evaluate(epoch, model, criterion, validloader, log_prefix="val")
-            test_loss, test_f1 = self.evaluate(epoch, model, criterion, testloader, log_prefix="test")
             if eval_f1 > best_model_f1:
                 print("Saving model")
                 model_name = model.__class__.__name__

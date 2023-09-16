@@ -169,7 +169,6 @@ class BaseTrainer:
         for epoch in range(self.epochs):
             train_loss = self.train(epoch, model, optimizer, criterion, trainloader)
             eval_loss, eval_r2 = self.evaluate(epoch, model, criterion, validloader, log_prefix="val")
-            test_loss, test_r2 = self.evaluate(epoch, model, criterion, testloader, log_prefix="test")
             if eval_r2 > best_model_r2:
                 print("Saving model")
                 model_name = model.__class__.__name__
