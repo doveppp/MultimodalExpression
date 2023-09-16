@@ -28,8 +28,6 @@ class Conv2dDeepLncLocEmbedding(nn.Module):
             nn.Conv2d(128, hidden_size, (3, 1), (1, 1)),
             nn.AdaptiveAvgPool2d((1, None)),
         )
-        # nn.init.xavier_uniform_(self.seq_deeplncloc_conv2d[0].weight)
-        # nn.init.xavier_uniform_(self.seq_deeplncloc_conv2d[2].weight)
         self.seq_transformer_encoder = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(
                 d_model=hidden_size,

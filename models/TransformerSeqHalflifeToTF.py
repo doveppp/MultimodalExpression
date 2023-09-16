@@ -3,14 +3,12 @@ import random
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import multiprocessing
 
 from tqdm import tqdm
 
-from transformers import BertConfig, BertModel, BertTokenizer
-from transformers.models.bert.modeling_bert import BaseModelOutputWithPoolingAndCrossAttentions
+from transformers import BertTokenizer
 
 from sklearn.metrics import precision_recall_fscore_support
 
@@ -18,15 +16,13 @@ from models.base import *
 from models.base import _USE_HALFLIFE, _USE_SEQ, _USE_TF
 from models.utils import (
     get_data_loader,
-    PositionalEncoding,
-    AbsolutePositionalEncoding,
 )
 from models.DataEmbedding import DataEmbedding
 from models.BertDeepLncLocEmbedding import BertDeepLncLocEmbedding
 
 from tools import cpp_utils
 
-# BERT_PATH = "trained_models/bert/promoter_k5/checkpoint-70000"
+
 BERT_PATH = "trained_models/bert/promoter_k3_to_k7/checkpoint-100000"
 
 
@@ -53,9 +49,9 @@ class SeqHalflifeToTFDataset(Dataset):
 
     def embedding(self, onehot_sent):
         onehot_sent = np.insert(onehot_sent, 4, 1, axis=1)  # 0:A, 1:C, 2:G, 3:T, 4:none
-        max_indices = np.argmax(onehot_sent, axis=1)  # 找到每行中最大值的索引
-        char_dict = {4: "N", 0: "A", 1: "C", 2: "G", 3: "T"}  # 预定义字符映射
-        translated_sent = "".join([char_dict[i.item()] for i in max_indices])  # 将索引映射到字符
+        max_indices = np.argmax(onehot_sent, axis=1)
+        char_dict = {4: "N", 0: "A", 1: "C", 2: "G", 3: "T"}
+        translated_sent = "".join([char_dict[i.item()] for i in max_indices])
         small_sent_ls = cpp_utils.sliding_window(translated_sent, 100, 50)
         fragmented_sent_ls = []
         for small_sent in small_sent_ls:
@@ -144,9 +140,9 @@ class TransformerSeqHalflifeToTFTrainer(BaseTrainer):
 
     @staticmethod
     def get_data_loader():
-        center = 10000  # 中心位置
-        upstream = center - 7000  # 上游位置
-        downstream = center + 3500  # 下游位置
+        center = 10000
+        upstream = center - 7000
+        downstream = center + 3500
         datadir = "Dataset/dataset_aumentati"
         filename_format = "{}_tf.h5"
         trainloader, validloader, testloader = get_data_loader(
