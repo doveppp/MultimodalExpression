@@ -1,0 +1,35 @@
+import argparse
+import os
+
+
+from models.BertDeepLncLocMultimodalExpression import BertDeepLncLocMultimodalExpressionTrainer
+from models.TransformerSeqHalflifeToTF import TransformerSeqHalflifeToTFTrainer
+from models.Conv2dDeepLncLocMultimodalExpression import Conv2dDeepLncLocMultimodalExpressionTrainer
+
+MODEL_TRAINER_MAP = {
+    "BertDeepLncLocMultimodalExpression": BertDeepLncLocMultimodalExpressionTrainer,
+    "TransformerSeqHalflifeToTF": TransformerSeqHalflifeToTFTrainer,
+    "Conv2dDeepLncLocMultimodalExpression": Conv2dDeepLncLocMultimodalExpressionTrainer,
+}
+
+
+parser = argparse.ArgumentParser()
+
+
+parser.add_argument("model", type=str, default="BertDeepLncLocMultimodalExpression", help="Model name")
+parser.add_argument("--track", default=False, action="store_true")
+parser.add_argument("--comment", type=str, default="")
+args = parser.parse_args()
+
+if args.track:
+    os.environ['_USE_TRACK'] = "1"
+
+if args.comment:
+    os.environ['RUN_COMMENT'] = args.comment
+
+if __name__ == "__main__":    
+    selected_model = MODEL_TRAINER_MAP.get(args.model)
+    if selected_model:
+        selected_model().start()
+    else:
+        print("Model not found!")
