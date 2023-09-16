@@ -30,9 +30,7 @@ setup_seed(seed=3)
 
 
 class BaseDataset(Dataset):
-    def __init__(
-        self, filename, truncation: tuple = None, promoter_embedding=None, wv=None
-    ) -> None:
+    def __init__(self, filename, truncation: tuple = None, promoter_embedding=None, wv=None) -> None:
         super().__init__()
         self.promoter_embedding = promoter_embedding
         file = h5py.File(filename, "r", swmr=True)
@@ -84,9 +82,7 @@ class ModelBase(nn.Module):
             x = _cat(x, tf)
         return x
 
-    def gen_first_layer(
-        self, seq_size=None, output_size=None, half_size=8, tf_size=181
-    ):
+    def gen_first_layer(self, seq_size=None, output_size=None, half_size=8, tf_size=181):
         r = 0
         if self.use_seq:
             r += seq_size
@@ -106,9 +102,7 @@ class DumpWriger:
 
 
 class BaseTrainer:
-    def __init__(
-        self, epochs=250, run_nums=5, writer=None, patience=20, lr_scheduler=None
-    ) -> None:
+    def __init__(self, epochs=250, run_nums=5, writer=None, patience=20, lr_scheduler=None) -> None:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.epochs = epochs
         self.patience = patience
@@ -167,23 +161,15 @@ class BaseTrainer:
             runs_res.append((test_r2, test_loss))
             print(runs_res)
 
-        print(
-            f"Average r2: {np.mean([x[0] for x in runs_res])} loss: {np.mean([x[1] for x in runs_res])}"
-        )
+        print(f"Average r2: {np.mean([x[0] for x in runs_res])} loss: {np.mean([x[1] for x in runs_res])}")
 
-    def start_one_run(
-        self, run, model, optimizer, criterion, trainloader, validloader, testloader
-    ):
+    def start_one_run(self, run, model, optimizer, criterion, trainloader, validloader, testloader):
         last_boost = 0
         best_model_r2 = -100
         for epoch in range(self.epochs):
             train_loss = self.train(epoch, model, optimizer, criterion, trainloader)
-            eval_loss, eval_r2 = self.evaluate(
-                epoch, model, criterion, validloader, log_prefix="val"
-            )
-            test_loss, test_r2 = self.evaluate(
-                epoch, model, criterion, testloader, log_prefix="test"
-            )
+            eval_loss, eval_r2 = self.evaluate(epoch, model, criterion, validloader, log_prefix="val")
+            test_loss, test_r2 = self.evaluate(epoch, model, criterion, testloader, log_prefix="test")
             if eval_r2 > best_model_r2:
                 print("Saving model")
                 model_name = model.__class__.__name__
@@ -195,16 +181,13 @@ class BaseTrainer:
                     os.remove(sorted(glob.glob(f"{model_path}/*.pt"))[0])
                 torch.save(
                     model.state_dict(),
-                    os.path.join(
-                        model_path, f"{model_name}-{eval_r2:.3f}-{eval_loss:.3f}.pt"
-                    ),
+                    os.path.join(model_path, f"{model_name}-{eval_r2:.3f}-{eval_loss:.3f}.pt"),
                 )
                 self.best_model_state = copy.deepcopy(model.state_dict())
                 best_model_r2 = eval_r2
                 last_boost = 0
             else:
                 last_boost += 1
-                # self.model.load_state_dict(self.best_model_state)
                 if last_boost > self.patience:
                     print("Early stopping. Best model r2: {:.3f}".format(best_model_r2))
                     break
@@ -212,9 +195,7 @@ class BaseTrainer:
             if self.lr_scheduler:
                 self.lr_scheduler.step()
         model.load_state_dict(self.best_model_state)
-        test_loss, test_r2 = self.evaluate(
-            epoch, model, criterion, testloader, log_prefix="test"
-        )
+        test_loss, test_r2 = self.evaluate(epoch, model, criterion, testloader, log_prefix="test")
         print("Best model test r2: {:.3f} loss:{:.3f}".format(test_r2, test_loss))
         self.writer.finish()
         return test_r2, test_loss
@@ -239,9 +220,7 @@ class BaseTrainer:
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 5)
             optimizer.step()
-        print(
-            f"\033[34mTrain Epoch: {epoch} \tLoss: {np.mean(train_loss_ls):.6f} \033[0m"
-        )
+        print(f"\033[34mTrain Epoch: {epoch} \tLoss: {np.mean(train_loss_ls):.6f} \033[0m")
         self.writer.log({"train/loss": np.mean(train_loss_ls)})
         return np.mean(train_loss_ls)
 
@@ -251,9 +230,7 @@ class BaseTrainer:
         test_loss_ls = []
         y_pred_ls = []
         y_true_ls = []
-        for i, (X_promoter, X_halflife, X_tf, y) in enumerate(
-            tqdm(dataloader, desc="Testing", ncols=100)
-        ):
+        for i, (X_promoter, X_halflife, X_tf, y) in enumerate(tqdm(dataloader, desc="Testing", ncols=100)):
             X_promoter, X_halflife, X_tf = (
                 X_promoter.to(self.device),
                 X_halflife.to(self.device),
